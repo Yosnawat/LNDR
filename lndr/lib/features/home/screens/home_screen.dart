@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart'; // เพิ่ม import เพื่อใช้เปลี่ยนหน้า
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -7,41 +8,63 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dorm A - Laundry Room'), // ปรับชื่อให้ดูสมจริง
+        title: const Text('LNDR'),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.settings_outlined))
+          // กดที่ฟันเฟืองแล้วไปหน้า Settings
+          IconButton(
+            onPressed: () => context.push('/settings'), 
+            icon: const Icon(Icons.settings_outlined)
+          ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
-        children: const [
-          // จำลองข้อมูลเครื่องต่างๆ ตาม Design Mockup
-          MachineCard(
-            id: '1',
-            type: 'Washer',
-            status: MachineStatus.available,
+        children: [
+          // เครื่องที่ 1: ใช้ GestureDetector ครอบเพื่อให้กดได้
+          GestureDetector(
+            onTap: () => context.push('/timer'), // กดแล้วเด้งไปหน้าจับเวลา
+            child: const MachineCard(
+              title: 'Machine 1', 
+              statusText: 'Available', 
+              subText: 'Est. wait time: 0 mins', 
+              status: MachineStatus.available,
+            ),
           ),
-          SizedBox(height: 12),
-          MachineCard(
-            id: '2',
-            type: 'Washer',
-            status: MachineStatus.busy,
-            timeLeft: '25 mins left',
+          const SizedBox(height: 12),
+          
+          // เครื่องที่ 2
+          GestureDetector(
+            onTap: () => context.push('/timer'),
+            child: const MachineCard(
+              title: 'Machine 2', 
+              statusText: 'In Use', 
+              subText: 'Time wait time: 25 mins', 
+              status: MachineStatus.inUse,
+            ),
           ),
-          SizedBox(height: 12),
-          MachineCard(
-            id: '3',
-            type: 'Dryer',
-            status: MachineStatus.busy,
-            timeLeft: '10 mins left',
-            isDryer: true,
+          const SizedBox(height: 12),
+          
+          // เครื่องที่ 3 (มีหลอดโหลด Progress)
+          GestureDetector(
+            onTap: () => context.push('/timer'),
+            child: const MachineCard(
+              title: 'Machine 3', 
+              statusText: 'Time remaining: 25 mins', 
+              status: MachineStatus.inUseWithProgress, 
+              progressValue: 0.6, // หลอดโหลด 60%
+            ),
           ),
-           SizedBox(height: 12),
-          MachineCard(
-            id: '4',
-            type: 'Washer',
-            status: MachineStatus.broken,
-            reportTime: 'Reported: 10 mins ago',
+          const SizedBox(height: 12),
+          
+          // เครื่องที่ 4 (เสียบ่อย)
+          GestureDetector(
+            onTap: () => context.push('/report'), // เครื่องเสีย กดแล้วให้ไปหน้าแจ้งซ่อม
+            child: const MachineCard(
+              title: 'Broken', 
+              statusText: 'Broken', 
+              subText: 'Reported: 10 mins ago', 
+              status: MachineStatus.broken,
+            ),
           ),
         ],
       ),
@@ -51,113 +74,91 @@ class HomeScreen extends StatelessWidget {
 
 // --- ส่วนเสริม: สร้าง Widget การ์ดเครื่องซักผ้าขึ้นมาใหม่ ---
 
-// Enum สำหรับกำหนดสถานะ
-enum MachineStatus { available, busy, broken }
+// Enum สำหรับกำหนดสถานะ (อัปเดตใหม่ให้ตรงกับ Wireframe)
+enum MachineStatus { available, inUse, inUseWithProgress, broken }
 
 class MachineCard extends StatelessWidget {
-  final String id;
-  final String type;
+  final String title;
+  final String statusText;
+  final String? subText;
   final MachineStatus status;
-  final String? timeLeft;
-  final String? reportTime;
-  final bool isDryer;
+  final double? progressValue;
 
   const MachineCard({
-    super.key,
-    required this.id,
-    required this.type,
-    required this.status,
-    this.timeLeft,
-    this.reportTime,
-    this.isDryer = false,
+    super.key, 
+    required this.title, 
+    required this.statusText, 
+    required this.status, 
+    this.subText, 
+    this.progressValue
   });
 
   @override
   Widget build(BuildContext context) {
     // กำหนดสีและไอคอนตามสถานะ
-    Color statusColor;
-    IconData statusIcon;
-    String statusText;
-
-    switch (status) {
-      case MachineStatus.available:
-        statusColor = const Color(0xFF4CAF50); // เขียว
-        statusIcon = Icons.lock_open_outlined;
-        statusText = 'Available';
-        break;
-      case MachineStatus.busy:
-        statusColor = const Color(0xFF2196F3); // ฟ้า
-        statusIcon = Icons.person_outline;
-        statusText = 'In Use';
-        break;
-      case MachineStatus.broken:
-        statusColor = const Color(0xFFE53935); // แดง
-        statusIcon = Icons.build_outlined;
-        statusText = 'Broken';
-        break;
-    }
+    Color statusColor = status == MachineStatus.available 
+        ? const Color(0xFF4CAF50) 
+        : (status == MachineStatus.broken ? const Color(0xFFE53935) : const Color(0xFF2196F3));
+    IconData rightIcon = status == MachineStatus.available 
+        ? Icons.lock_open_outlined 
+        : (status == MachineStatus.broken ? Icons.build_outlined : Icons.person_outline);
+    Color mainStatusColor = (status == MachineStatus.inUseWithProgress) ? Colors.black87 : statusColor;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16), // ขอบมนตาม Design
+        color: Colors.white, 
+        borderRadius: BorderRadius.circular(12), 
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+            color: Colors.black.withOpacity(0.03), 
+            blurRadius: 8, 
+            offset: const Offset(0, 2)
+          )
+        ]
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ไอคอนเครื่องซัก/อบ
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              isDryer ? Icons.local_laundry_service : Icons.water_drop_outlined,
-              color: Colors.grey.shade700,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: 16),
-          // ข้อมูลตรงกลาง
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$type $id',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 4),
+                    Text(
+                      statusText, 
+                      style: TextStyle(
+                        color: mainStatusColor, 
+                        fontWeight: FontWeight.bold, 
+                        fontSize: status == MachineStatus.inUseWithProgress ? 14 : 16
+                      )
+                    ),
+                    if (subText != null) ...[
+                      const SizedBox(height: 4), 
+                      Text(subText!, style: TextStyle(color: Colors.grey.shade500, fontSize: 12))
+                    ],
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  statusText,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                // แสดงเวลาที่เหลือ หรือเวลาที่แจ้งซ่อม ถ้ามี
-                if (timeLeft != null) ...[
-                   const SizedBox(height: 4),
-                   Text(timeLeft!, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-                   // (Optional) ใส่ Progress Bar เล็กๆ ตรงนี้ได้ในอนาคต
-                ],
-                 if (reportTime != null) ...[
-                   const SizedBox(height: 4),
-                   Text(reportTime!, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-                ],
-              ],
-            ),
+              ),
+              Icon(rightIcon, color: Colors.grey.shade400),
+            ],
           ),
-          // ไอคอนสถานะด้านขวาสุด
-          Icon(statusIcon, color: Colors.grey.shade400),
+          // แสดงหลอด Progress ถ้ามีสถานะ inUseWithProgress
+          if (status == MachineStatus.inUseWithProgress && progressValue != null) ...[
+            const SizedBox(height: 12),
+            LinearProgressIndicator(
+              value: progressValue, 
+              backgroundColor: Colors.grey.shade200, 
+              color: Colors.black87, 
+              minHeight: 6, 
+              borderRadius: BorderRadius.circular(4)
+            ),
+          ]
         ],
       ),
     );
