@@ -9,61 +9,114 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.remove), // เส้นขีดตาม design
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
           onPressed: () => context.pop(),
         ),
-        title: const Text('Settings'),
-        actions: [
-          IconButton(icon: const Icon(Icons.settings_outlined), onPressed: () {}),
-        ],
+        title: const Text(
+          'Profile & Settings',
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         children: [
-          _buildSettingTile('Machine 3', 'Lim Got', 'At dorm tee Bomnreg', true),
+          // โชว์ข้อมูลชื่อ (ล็อกไม่ให้พิมพ์แก้)
+          const Text(
+            'Name',
+            style: TextStyle(color: Colors.grey, fontSize: 14),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            readOnly: true,
+            decoration: InputDecoration(
+              hintText: 'Yosnawat Onjan',
+              hintStyle: const TextStyle(color: Colors.black87),
+              filled: true,
+              fillColor: Colors.grey.shade50,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // โชว์ข้อมูลรหัสนักศึกษา (ล็อกไม่ให้พิมพ์แก้)
+          const Text(
+            'University ID',
+            style: TextStyle(color: Colors.grey, fontSize: 14),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            readOnly: true,
+            decoration: InputDecoration(
+              hintText: '6731503029',
+              hintStyle: const TextStyle(color: Colors.black87),
+              filled: true,
+              fillColor: Colors.grey.shade50,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // เมนูต่างๆ
+
+          // 1. เพิ่มปุ่ม Notifications ตรงนี้
+          _buildActionTile(
+            'Notifications',
+            Icons.notifications_none_outlined,
+            onTap: () => context.push('/notifications'),
+          ),
           const SizedBox(height: 12),
-          _buildSettingTile('Machine 3', 'Aly Hication', 'Favorite Machines', false),
+
+          // 2. ปุ่ม Help Center เดิม
+          _buildActionTile(
+            'Help Center',
+            Icons.help_outline,
+            onTap: () => context.push('/help'),
+          ),
           const SizedBox(height: 12),
-          _buildSettingTile('Machine 5', 'Flam Sabt', 'My vs. Nat Net Starting', true),
-          const SizedBox(height: 24),
-          const Text('Favorite', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          const SizedBox(height: 12),
-          _buildSettingTile('Aly Hication', 'Favorite Machines', 'Fast tee bot (15 mins)', true),
-          const SizedBox(height: 24),
-          ListTile(
-            title: const Text('Report Issue', style: TextStyle(fontWeight: FontWeight.bold)),
-            trailing: const Icon(Icons.person_outline),
-            onTap: () => context.push('/report'),
-            tileColor: Colors.grey.shade50,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+
+          // 3. ปุ่ม Log Out เดิม
+          _buildActionTile(
+            'Log Out',
+            Icons.logout,
+            isDestructive: true,
+            onTap: () => context.go('/login'),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSettingTile(String title, String subtitle1, String subtitle2, bool switchValue) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: ListTile(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(subtitle1, style: const TextStyle(color: Colors.black87)),
-            Text(subtitle2, style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
-          ],
-        ),
-        trailing: Switch(
-          value: switchValue,
-          onChanged: (val) {},
-          activeThumbColor: Colors.black87,
+  Widget _buildActionTile(
+    String title,
+    IconData icon, {
+    VoidCallback? onTap,
+    bool isDestructive = false,
+  }) {
+    return ListTile(
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isDestructive ? Colors.red : Colors.black87,
+          fontWeight: FontWeight.w500,
         ),
       ),
+      trailing: Icon(
+        icon,
+        color: isDestructive ? Colors.red : Colors.grey.shade600,
+      ),
+      tileColor: Colors.grey.shade50,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      onTap: onTap,
     );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart'; // เพิ่ม import เพื่อใช้เปลี่ยนหน้า
+import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -10,7 +10,6 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('LNDR'),
         actions: [
-          // กดที่ฟันเฟืองแล้วไปหน้า Settings
           IconButton(
             onPressed: () => context.push('/settings'), 
             icon: const Icon(Icons.settings_outlined)
@@ -20,9 +19,9 @@ class HomeScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // เครื่องที่ 1: ใช้ GestureDetector ครอบเพื่อให้กดได้
+          // เครื่องที่ 1: เปลี่ยนกลับมาให้กดใช้งานได้ปกติ
           GestureDetector(
-            onTap: () => context.push('/timer'), // กดแล้วเด้งไปหน้าจับเวลา
+            onTap: () => context.push('/timer'), // <--- ปล่อยให้กดไปหน้า Timer ได้แล้ว
             child: const MachineCard(
               title: 'Machine 1', 
               statusText: 'Available', 
@@ -32,9 +31,9 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           
-          // เครื่องที่ 2
+          // เครื่องที่ 2: กดเข้าไปหน้า timer ปกติ
           GestureDetector(
-            onTap: () => context.push('/timer'),
+            onTap: () => context.push('/timer'), 
             child: const MachineCard(
               title: 'Machine 2', 
               statusText: 'In Use', 
@@ -44,21 +43,21 @@ class HomeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           
-          // เครื่องที่ 3 (มีหลอดโหลด Progress)
+          // เครื่องที่ 3: กดเข้าไปหน้า timer ปกติ
           GestureDetector(
-            onTap: () => context.push('/timer'),
+            onTap: () => context.push('/timer'), 
             child: const MachineCard(
               title: 'Machine 3', 
               statusText: 'Time remaining: 25 mins', 
               status: MachineStatus.inUseWithProgress, 
-              progressValue: 0.6, // หลอดโหลด 60%
+              progressValue: 0.6,
             ),
           ),
           const SizedBox(height: 12),
           
-          // เครื่องที่ 4 (เสียบ่อย)
+          // เครื่องที่ 4: เครื่องเสีย กดแล้วให้ไปหน้าแจ้งซ่อม
           GestureDetector(
-            onTap: () => context.push('/report'), // เครื่องเสีย กดแล้วให้ไปหน้าแจ้งซ่อม
+            onTap: () => context.push('/report'), 
             child: const MachineCard(
               title: 'Broken', 
               statusText: 'Broken', 
@@ -74,7 +73,6 @@ class HomeScreen extends StatelessWidget {
 
 // --- ส่วนเสริม: สร้าง Widget การ์ดเครื่องซักผ้าขึ้นมาใหม่ ---
 
-// Enum สำหรับกำหนดสถานะ (อัปเดตใหม่ให้ตรงกับ Wireframe)
 enum MachineStatus { available, inUse, inUseWithProgress, broken }
 
 class MachineCard extends StatelessWidget {
@@ -95,13 +93,16 @@ class MachineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // กำหนดสีและไอคอนตามสถานะ
+    // กำหนดสีตามสถานะ
     Color statusColor = status == MachineStatus.available 
         ? const Color(0xFF4CAF50) 
         : (status == MachineStatus.broken ? const Color(0xFFE53935) : const Color(0xFF2196F3));
-    IconData rightIcon = status == MachineStatus.available 
-        ? Icons.lock_open_outlined 
+    
+    // กำหนดไอคอน (ถ้าเป็น Available ให้เป็น null คือไม่มีไอคอน)
+    IconData? rightIcon = status == MachineStatus.available 
+        ? null // <--- เอาแม่กุญแจออกแล้ว
         : (status == MachineStatus.broken ? Icons.build_outlined : Icons.person_outline);
+        
     Color mainStatusColor = (status == MachineStatus.inUseWithProgress) ? Colors.black87 : statusColor;
 
     return Container(
@@ -145,7 +146,8 @@ class MachineCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(rightIcon, color: Colors.grey.shade400),
+              // จะโชว์ไอคอนก็ต่อเมื่อ rightIcon ไม่เป็นค่าว่าง
+              if (rightIcon != null) Icon(rightIcon, color: Colors.grey.shade400),
             ],
           ),
           // แสดงหลอด Progress ถ้ามีสถานะ inUseWithProgress
